@@ -1,0 +1,216 @@
+{
+  "info": {
+    "_postman_id": "5fcf797a-da91-4495-a00e-4ea64c91fdc1",
+    "name": "RickandMortyAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24541367"
+  },
+  "item": [
+    {
+      "name": "1.Obtener todos los Personajes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "console.log(response.results[7]);\r",
+              "\r",
+              "pm.test(\"confirmar personaje\", function(){\r",
+              "    pm.expect(pm.response.text()).to.include(\"Rick Sanchez\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"El personaje con el id '8' coincide con el nombre: \", function(){\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var idRick = jsonData.results.find(x => x.id == 8)\r",
+              "    pm.expect(idRick.name).to.eql(\"Adjudicator Rick\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"La lista de personajes no está vacía\", function () {\r",
+              "    var response = pm.response.json();\r",
+              "    pm.expect(response.info.count).to.be.greaterThan(0);\r",
+              "    pm.expect(response.results.length).to.be.greaterThan(0);\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Codigo de estatus Ok 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{Url_BaseRM}}{{Personajes}}",
+          "host": [
+            "{{Url_BaseRM}}{{Personajes}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2.Listado de personajes por pagina",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "const cStatus = response.results.map(results=> results.status);\r",
+              "console.log(cStatus)\r",
+              "console.log(response)\r",
+              "const characterAlives = response.results.filter((results) => results.status === \"Alive\");\r",
+              "console.log(characterAlives);\r",
+              "const results =  characterAlives[0];\r",
+              "console.log(results);\r",
+              "\r",
+              "pm.test('Comprobar personaje vivo', ()=> { \r",
+              "    pm.expect(results.status).to.eql(\"Alive\")\r",
+              " });\r",
+              "    \r",
+              "pm.test(\"Comprobar Personajes existentes dentro de la pagina\", function(){\r",
+              "    pm.expect(pm.response.text()).to.include(\"Rick's Garage\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Memory Squanchy\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Memory Rick\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Memory Geardude\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Birdperson & Tammy's Child\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Two Crows\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Mr. Cookie President\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Nick\");\r",
+              "    pm.expect(pm.response.text()).to.include(\"Harold (Garbage Goober)\");\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "javascript"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Url_BaseRM}}{{Personajes}}{{pagina40}}",
+          "host": [
+            "{{Url_BaseRM}}{{Personajes}}{{pagina40}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3.Obtener un Personaje por iD",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "//const arr = [1,5,10];\r",
+              "//const personaje = arr.find(item => item.name === \"Rick Sanchez\");\r",
+              "//console.log(personaje);\r",
+              "console.log(response);\r",
+              "console.log(response.origin);\r",
+              "\r",
+              "pm.test(\"El personaje es Rick Sanchez\", () => {\r",
+              "    pm.expect(response.name).to.eql(\"Rick Sanchez\");\r",
+              "    pm.expect(response.id).to.eql(1);\r",
+              "    pm.expect(response.origin.name).to.equal(\"Earth (C-137)\");\r",
+              "});\r",
+              "\r",
+              "var schema = {\r",
+              "    \"itemss\": {\r",
+              "        \"type\": \"object\",\r",
+              "        \"properties\":\r",
+              "        {\r",
+              "            \"id\":{\"type\":\"int\"},\r",
+              "            \"name\":{\"type\":\"string\"},\r",
+              "            \"status\":{\"type\":\"int\"},\r",
+              "            \"species\":{\"type\":\"string\"},\r",
+              "            \"type\":{\"type\":\"string\"},\r",
+              "            \"gender\":{\"type\":\"string\"},\r",
+              "            \"origin\":{\"type\":\"object\"},\r",
+              "            \"location\":{\"type\":\"object\"},\r",
+              "            \"image\":{\"type\":\"string\"},\r",
+              "            \"episode\":{\"type\":\"string\"},\r",
+              "            \"url\":{\"type\":\"string\"},\r",
+              "            \"created\":{\"type\":\"string\"}\r",
+              "        }\r",
+              "    }\r",
+              "};\r",
+              "pm.test(\"esquma validado\", ()=>{\r",
+              "    pm.response.to.have.jsonSchema(schema);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{Url_BaseRM}}{{Personajes}}/1",
+          "host": [
+            "{{Url_BaseRM}}{{Personajes}}"
+          ],
+          "path": [
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4.ArrayEmpty",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "console.log(response);\r",
+              "\r",
+              "pm.test(\"Array Vacio iD no existentes\", () => {\r",
+              "  pm.expect(response).to.be.empty;\r",
+              "});\r",
+              "\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{Url_BaseRM}}{{Personajes}}/900,901,920,960",
+          "host": [
+            "{{Url_BaseRM}}{{Personajes}}"
+          ],
+          "path": [
+            "900,901,920,960"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,794 @@
+{
+  "info": {
+    "_postman_id": "281f4301-d188-427d-be5a-3af262121b92",
+    "name": "Libros2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24541367"
+  },
+  "item": [
+    {
+      "name": "Validancion de ambiente activo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"EL codigo es 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"El tiempo de respuesta es de 999ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(999);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Las propiedades responden con el ambiente\", function () {\r",
+              "  pm.expect(pm.response.json().name).to.eql(pm.environment.get(\"status\"));\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}status",
+          "host": [
+            "{{baseUrl}}status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Crear orden sin token - Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code should be 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"bookId\": {{bookId}},\r\n  \"customerName\": \"{{customerName}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Registrar cliente y guardar token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Tiempo de respuesta < 3000 ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Access token existe\", function () {\r",
+              "    pm.expect(jsonData.accessToken).to.exist;\r",
+              "    pm.expect(jsonData.accessToken).to.not.be.empty;\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"accessToken\", jsonData.accessToken);\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const random = Math.floor(Math.random() * 100000);\r",
+              "pm.environment.set(\"clientEmail\", `aaron${random}@mail.com`);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"clientName\": \"{{clientName}}\",\r\n  \"clientEmail\": \"{{clientEmail}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiClient}}",
+          "host": [
+            "{{baseUrl}}{{apiClient}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Registrar cliente repetido - Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 409\", function () {\r",
+              "    pm.response.to.have.status(409);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"El mensaje de Error debe concidir\", function () {\r",
+              "    pm.expect(jsonData.error).to.eql(\"API client already registered. Try a different email.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"clientName\": \"{{clientName}}\",\r\n  \"clientEmail\": \"{{clientEmail}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiClient}}",
+          "host": [
+            "{{baseUrl}}{{apiClient}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Listar Libros (Camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Status 200\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"La respuesta es un array no vacío\", () => {\r",
+              "    const books = pm.response.json();\r",
+              "    pm.expect(books).to.be.an(\"array\").that.is.not.empty;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Estructura de cada libro es válida\", () => {\r",
+              "    pm.response.json().forEach(book => {\r",
+              "        pm.expect(book).to.have.all.keys(\"id\", \"name\", \"type\", \"available\");\r",
+              "        pm.expect(book.id).to.be.a(\"number\");\r",
+              "        pm.expect(book.name).to.be.a(\"string\");\r",
+              "        pm.expect(book.type).to.be.oneOf([\"fiction\", \"non-fiction\"]);\r",
+              "        pm.expect(book.available).to.be.a(\"boolean\");\r",
+              "    });\r",
+              "});\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}{{Books}}",
+          "host": [
+            "{{baseUrl}}{{Books}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Obtener un libro por id (Camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Book id debe concidir\", function () {\r",
+              "    pm.expect(jsonData.id).to.eql(Number(pm.environment.get(\"bookId\")));\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Book debe tener las propiedades correctas\", function () {\r",
+              "    pm.expect(jsonData).to.have.property(\"name\");\r",
+              "    pm.expect(jsonData).to.have.property(\"author\");\r",
+              "    pm.expect(jsonData).to.have.property(\"type\");\r",
+              "    pm.expect(jsonData).to.have.property(\"price\");\r",
+              "    pm.expect(jsonData).to.have.property(\"current-stock\");\r",
+              "    pm.expect(jsonData).to.have.property(\"available\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}{{Books}}{{bookId}}",
+          "host": [
+            "{{baseUrl}}{{Books}}{{bookId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Crear orden (Camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"la orden creada deber ser verdadera\", function () {\r",
+              "    pm.expect(jsonData.created).to.eql(true);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"La orden creada existe\", function () {\r",
+              "    pm.expect(jsonData.orderId).to.exist;\r",
+              "    pm.expect(jsonData.orderId).to.not.be.empty;\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"orderId\", jsonData.orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"bookId\": {{bookId}},\r\n  \"customerName\": \"{{customerName}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Crear orden con bookId faltante - Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code should be 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Debe mostra un mensaje de eror con el texto 'Invalid or missing bookId.'\", function () {\r",
+              "    pm.expect(jsonData.error).to.exist;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"customerName\": \"{{customerName}}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Obtener una Orden por id (Camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Order Deben contener un id\", function () {\r",
+              "    pm.expect(jsonData.bookId).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"El nombre del cliente de concidir\", function () {\r",
+              "    pm.expect(jsonData.customerName).to.eql(pm.environment.get(\"customerName\"));\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{orderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Actualizar orden (Camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\r",
+              "    pm.response.to.have.status(204);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"La respuesta debe estar vacia\", function () {\r",
+              "    pm.expect(pm.response.text()).to.eql(\"\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"customerName\": \"{{updatedCustomerName}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{orderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Actualizar orden inexistente - Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code should be 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Error Deberia existir la orden\", function () {\r",
+              "    pm.expect(jsonData.error).to.exist;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"customerName\": \"Nombre Invalido\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{invalidOrderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{invalidOrderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Actualizar orden sin token - Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code should be 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"customerName\": \"Sin Token\"\r\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{orderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Validar actualizacion(Camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Nombre del cliente actualizado\", function () {\r",
+              "    pm.expect(jsonData.customerName).to.eql(pm.environment.get(\"updatedCustomerName\"));\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{orderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Eliminar orden(Camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\r",
+              "    pm.response.to.have.status(204);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"El cuerpo de respuesta debe estar vacio\", function () {\r",
+              "    pm.expect(pm.response.text()).to.eql(\"\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{orderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Validar que la orden ya no existe(camino Feliz)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Debe mostrarse el mensaje de error\", function () {\r",
+              "    pm.expect(jsonData.error).to.exist;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{orderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Eliminar orden inexistente - Negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code should be 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "const jsonData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Error deberia existir la orden\", function () {\r",
+              "    pm.expect(jsonData.error).to.exist;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl2}}{{orders}}{{invalidOrderId}}",
+          "host": [
+            "{{baseUrl2}}{{orders}}{{invalidOrderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
